@@ -50,6 +50,12 @@ The raw OpenAPI document is available at:
 http://localhost:8787/openapi.json
 ```
 
+## Postman
+
+Import the collection and local environment from `postman/`.
+
+See `postman/README.md` for usage.
+
 ## D1
 
 Create a D1 database and replace `database_id` in `wrangler.toml`.
@@ -66,6 +72,10 @@ The MVP schema lives in:
 - `migrations/0002_seed_mvp_data.sql`
 
 The ERD and index rationale are documented in `docs/database/erd.md`.
+
+## Deployment
+
+See `docs/deployment/cloudflare-workers-d1.md` for the Cloudflare Workers + D1 deployment checklist, secret handling, smoke tests, and rollback steps.
 
 ## Notes
 
