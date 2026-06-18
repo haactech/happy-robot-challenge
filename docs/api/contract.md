@@ -11,7 +11,8 @@ The API is tool-driven: HappyRobot calls specific endpoints during the conversat
 - Base path: `/api`
 - Style: REST-oriented resources and actions
 - Transport: HTTPS
-- Authentication: `x-api-key: <API_KEY>`
+- Authentication: `x-api-key: <API_KEY>` for all `/api/*` endpoints
+- Public endpoint: `GET /health`
 - Request format: JSON
 - Response format: JSON
 - Time format: ISO 8601 strings
@@ -41,6 +42,25 @@ All endpoints return this shape for non-2xx responses.
 - `carrier_ineligible`
 - `negotiation_limit_reached`
 - `internal_error`
+
+## `GET /health`
+
+Returns basic service health. This endpoint is public and does not require `x-api-key`.
+
+### Response `200`
+
+```json
+{
+  "status": "ok",
+  "service": "carrier-sales-api",
+  "version": "0.1.0"
+}
+```
+
+### Notes
+
+- This endpoint is intended for deployment checks and local development.
+- It must not expose secrets, environment variables, database contents, or account identifiers.
 
 ## `POST /api/carriers/verify`
 
@@ -170,6 +190,8 @@ Evaluates a carrier offer or counteroffer for a load.
 ### Notes
 
 - Maximum negotiation depth is three rounds.
+- This endpoint is deterministic and does not persist negotiation rounds.
+- The final negotiation summary is persisted later through `POST /api/calls`.
 - If `decision` is `accept`, `agreed_price_cents` must be set.
 - If `decision` is `counter`, `counter_offer_cents` must be set.
 - If `round` is greater than `3`, return `409 negotiation_limit_reached`.

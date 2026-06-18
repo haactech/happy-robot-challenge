@@ -146,7 +146,7 @@ sequenceDiagram
     API->>Auth: Validate x-api-key
     Auth-->>API: Authorized
     API->>API: Validate round <= 3
-    API->>DB: Fetch load rate and existing context
+    API->>DB: Fetch load rate
     DB-->>API: Load economics
     API->>Engine: Evaluate offer
     Engine-->>API: accept, counter, or reject
@@ -157,7 +157,7 @@ sequenceDiagram
 
 - Resource focus: negotiation evaluation.
 - The endpoint is deterministic for a given load, offer, and round.
-- Persistence of the final outcome still happens through `POST /api/calls`; this endpoint only evaluates the current offer.
+- Persistence of the final outcome still happens through `POST /api/calls`; this endpoint only evaluates the current offer and does not store negotiation rounds.
 
 ## `POST /api/calls`
 
@@ -198,7 +198,7 @@ sequenceDiagram
 
     User->>UI: Opens dashboard
     UI->>API: GET /api/metrics/summary
-    API->>Auth: Validate x-api-key or dashboard session key
+    API->>Auth: Validate x-api-key
     Auth-->>API: Authorized
     API->>DB: Aggregate calls, outcomes, offers, and sentiment
     DB-->>API: Metric rows

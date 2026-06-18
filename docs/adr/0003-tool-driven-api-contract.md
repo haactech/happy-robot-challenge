@@ -30,6 +30,8 @@ The MVP API surface is:
 
 Each endpoint must define explicit request and response schemas before implementation. HappyRobot should not need to infer fields or parse ambiguous free text from API responses.
 
+`POST /api/negotiations/evaluate` is deterministic and does not persist each negotiation round. The MVP persists only the final structured summary through `POST /api/calls`.
+
 ## Consequences
 
 ### Positive
