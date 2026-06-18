@@ -9,6 +9,7 @@ import {
   loadSearchSchema,
   negotiationEvaluateSchema,
 } from "./http/schemas";
+import { openApiDocument, renderContractHtml } from "./openapi";
 import { createD1Repositories } from "./repositories/d1";
 import { createInMemoryRepositories } from "./repositories/inMemory";
 import type { CallRecord, Repositories } from "./repositories/types";
@@ -41,6 +42,14 @@ export function createApp(options: AppOptions = {}) {
       service: "carrier-sales-api",
       version: "0.1.0",
     });
+  });
+
+  app.get("/openapi.json", (context) => {
+    return context.json(openApiDocument);
+  });
+
+  app.get("/contract", (context) => {
+    return context.html(renderContractHtml());
   });
 
   app.use("/api/*", async (context, next) => {

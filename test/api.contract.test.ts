@@ -46,6 +46,40 @@ describe("API contract", () => {
     });
   });
 
+  it("exposes the OpenAPI contract as public JSON", async () => {
+    const app = createApp();
+
+    const response = await app.request("/openapi.json", {}, env);
+    const body = (await response.json()) as any;
+
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({
+      openapi: "3.1.0",
+      info: {
+        title: "Carrier Sales API",
+      },
+      paths: {
+        "/api/carriers/verify": expect.any(Object),
+        "/api/loads/search": expect.any(Object),
+        "/api/negotiations/evaluate": expect.any(Object),
+        "/api/calls": expect.any(Object),
+        "/api/metrics/summary": expect.any(Object),
+      },
+    });
+  });
+
+  it("exposes a public browsable contract page", async () => {
+    const app = createApp();
+
+    const response = await app.request("/contract", {}, env);
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/html");
+    expect(html).toContain("SwaggerUIBundle");
+    expect(html).toContain("/openapi.json");
+  });
+
   it("rejects protected API endpoints without x-api-key", async () => {
     const app = createApp();
 

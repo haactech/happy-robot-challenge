@@ -24,6 +24,8 @@ npm run dev
 
 - Public:
   - `GET /health`
+  - `GET /contract`
+  - `GET /openapi.json`
 - Protected with `x-api-key`:
   - `POST /api/carriers/verify`
   - `POST /api/loads/search`
@@ -32,6 +34,21 @@ npm run dev
   - `GET /api/metrics/summary`
 
 See `docs/api/contract.md` for request and response schemas.
+
+## Contract UI
+
+Run the app and open the browsable OpenAPI contract:
+
+```sh
+npm run dev
+open http://localhost:8787/contract
+```
+
+The raw OpenAPI document is available at:
+
+```text
+http://localhost:8787/openapi.json
+```
 
 ## D1
 
