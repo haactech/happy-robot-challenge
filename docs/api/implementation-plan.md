@@ -92,6 +92,14 @@ Avoid a separate `negotiation_rounds` table for MVP. Store final negotiation sum
 
 Create deterministic seed data for demo stability.
 
+Seed data should be SQL for D1 and should be based on:
+
+- The load fields from the technical challenge.
+- The normalized fields in `docs/api/contract.md`.
+- Synthetic demo scenarios required by route and domain tests.
+
+FMCSA raw API payloads should not define the database schema. Carrier seed data should include only the normalized verification fields required by the API contract.
+
 Seed loads must cover:
 
 - At least one obvious match.
@@ -157,9 +165,9 @@ Add:
 
 ### Slice 4: Negotiation
 
-- Offer at or above threshold returns `accept`.
-- Offer near threshold returns `counter`.
-- Low offer returns `reject`.
+- Offer at or above 95% of the loadboard rate returns `accept`.
+- Offer from 85% inclusive up to 95% exclusive returns `counter`.
+- Offer below 85% returns `reject`.
 - Round greater than `3` returns `409 negotiation_limit_reached`.
 
 ### Slice 5: Call Capture
@@ -179,8 +187,11 @@ Add:
 - `GET /health` is public.
 - All `/api/*` endpoints require `x-api-key`.
 - The dashboard and HappyRobot use the same `x-api-key` for the MVP.
+- Seed data is SQL for D1 and mirrors TypeScript test fixtures.
+- Seed load data is synthetic and based on the challenge fields.
+- Carrier seed data stores normalized verification fields, not raw FMCSA payloads.
+- Negotiation thresholds are 95% accept, 85%-95% counter, below 85% reject.
 
 ## Open Questions
 
-1. Should demo seed data live as SQL migrations or TypeScript fixtures?
-2. What exact negotiation thresholds should the MVP implement?
+None for the initial API implementation.

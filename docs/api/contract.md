@@ -97,6 +97,7 @@ Verifies whether a carrier is eligible to work with the broker based on MC numbe
 - `source` can be `fmcsa` or `mock`.
 - If FMCSA is unavailable during the demo, the API may use a deterministic mock fallback.
 - HappyRobot should stop the booking flow when `decision.can_continue` is `false`.
+- The database stores normalized verification fields, not the raw FMCSA response shape.
 
 ## `POST /api/loads/search`
 
@@ -192,6 +193,9 @@ Evaluates a carrier offer or counteroffer for a load.
 - Maximum negotiation depth is three rounds.
 - This endpoint is deterministic and does not persist negotiation rounds.
 - The final negotiation summary is persisted later through `POST /api/calls`.
+- Offers at or above 95% of `loadboard_rate_cents` are accepted.
+- Offers from 85% inclusive up to 95% exclusive are countered.
+- Offers below 85% are rejected.
 - If `decision` is `accept`, `agreed_price_cents` must be set.
 - If `decision` is `counter`, `counter_offer_cents` must be set.
 - If `round` is greater than `3`, return `409 negotiation_limit_reached`.
