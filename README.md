@@ -65,6 +65,8 @@ The MVP schema lives in:
 - `migrations/0001_create_mvp_schema.sql`
 - `migrations/0002_seed_mvp_data.sql`
 
+The ERD and index rationale are documented in `docs/database/erd.md`.
+
 ## Notes
 
 - `POST /api/negotiations/evaluate` is deterministic and does not persist negotiation rounds.
