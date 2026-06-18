@@ -1,0 +1,441 @@
+{
+  "info": {
+    "_postman_id": "7b2f8f95-1f8c-4b4b-91e2-carrier-sales-api",
+    "name": "Carrier Sales API",
+    "description": "Postman collection for the HappyRobot inbound carrier sales MVP API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "x-api-key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{api_key}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8787"
+    },
+    {
+      "key": "api_key",
+      "value": "test-api-key"
+    }
+  ],
+  "item": [
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('service is healthy', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.status).to.eql('ok');",
+                  "  pm.expect(json.service).to.eql('carrier-sales-api');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "OpenAPI JSON",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/openapi.json"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('contains OpenAPI contract', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.openapi).to.eql('3.1.0');",
+                  "  pm.expect(json.paths).to.have.property('/api/carriers/verify');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Carriers",
+      "item": [
+        {
+          "name": "Verify Eligible Carrier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mc_number\": \"123456\"\n}"
+            },
+            "url": "{{base_url}}/api/carriers/verify"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('carrier can continue', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.carrier.mc_number).to.eql('123456');",
+                  "  pm.expect(json.decision.can_continue).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify Ineligible Carrier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mc_number\": \"654321\"\n}"
+            },
+            "url": "{{base_url}}/api/carriers/verify"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('carrier cannot continue', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.carrier.eligible).to.eql(false);",
+                  "  pm.expect(json.decision.can_continue).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Loads",
+      "item": [
+        {
+          "name": "Search Matching Load",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mc_number\": \"123456\",\n  \"origin\": \"Chicago, IL\",\n  \"destination\": \"Dallas, TX\",\n  \"equipment_type\": \"dry_van\",\n  \"pickup_date\": \"2026-06-19\"\n}"
+            },
+            "url": "{{base_url}}/api/loads/search"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('returns recommended load', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.loads.length).to.be.above(0);",
+                  "  pm.expect(json.pitch.recommended_load_id).to.eql('LD-1001');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search No Matching Load",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mc_number\": \"123456\",\n  \"origin\": \"Miami, FL\",\n  \"destination\": \"Boise, ID\",\n  \"equipment_type\": \"dry_van\",\n  \"pickup_date\": \"2026-06-19\"\n}"
+            },
+            "url": "{{base_url}}/api/loads/search"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('returns empty result', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.loads).to.have.length(0);",
+                  "  pm.expect(json.pitch.recommended_load_id).to.eql(null);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Negotiations",
+      "item": [
+        {
+          "name": "Evaluate Counter Offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"load_id\": \"LD-1001\",\n  \"mc_number\": \"123456\",\n  \"round\": 1,\n  \"offer_cents\": 225000\n}"
+            },
+            "url": "{{base_url}}/api/negotiations/evaluate"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('decision is counter', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.negotiation.decision).to.eql('counter');",
+                  "  pm.expect(json.negotiation.counter_offer_cents).to.eql(232500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Evaluate Accept Offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"load_id\": \"LD-1001\",\n  \"mc_number\": \"123456\",\n  \"round\": 1,\n  \"offer_cents\": 230000\n}"
+            },
+            "url": "{{base_url}}/api/negotiations/evaluate"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('decision is accept', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.negotiation.decision).to.eql('accept');",
+                  "  pm.expect(json.negotiation.agreed_price_cents).to.eql(230000);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Evaluate Reject Offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"load_id\": \"LD-1001\",\n  \"mc_number\": \"123456\",\n  \"round\": 1,\n  \"offer_cents\": 200000\n}"
+            },
+            "url": "{{base_url}}/api/negotiations/evaluate"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('decision is reject', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.negotiation.decision).to.eql('reject');",
+                  "  pm.expect(json.negotiation.agreed_price_cents).to.eql(null);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Calls and Metrics",
+      "item": [
+        {
+          "name": "Create Booked Call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"external_call_id\": \"hr-call-abc123\",\n  \"mc_number\": \"123456\",\n  \"load_id\": \"LD-1001\",\n  \"outcome\": \"booked\",\n  \"sentiment\": \"positive\",\n  \"agreed_price_cents\": 232500,\n  \"negotiation_rounds\": 2,\n  \"transferred\": true,\n  \"extracted\": {\n    \"carrier_contact_name\": \"Alex\",\n    \"carrier_phone\": \"+15551234567\",\n    \"initial_offer_cents\": 225000,\n    \"final_offer_cents\": 232500,\n    \"notes\": \"Carrier accepted after one counteroffer.\"\n  }\n}"
+            },
+            "url": "{{base_url}}/api/calls"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));",
+                  "pm.test('call is saved', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.saved).to.eql(true);",
+                  "  pm.expect(json.outcome).to.eql('booked');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Metrics Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/metrics/summary"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('contains metrics sections', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('totals');",
+                  "  pm.expect(json).to.have.property('conversion');",
+                  "  pm.expect(json).to.have.property('sentiment');",
+                  "  pm.expect(json).to.have.property('recent_calls');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Booked Call Without Price",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"external_call_id\": \"hr-call-missing-price\",\n  \"mc_number\": \"123456\",\n  \"load_id\": \"LD-1001\",\n  \"outcome\": \"booked\",\n  \"sentiment\": \"positive\",\n  \"transferred\": true\n}"
+            },
+            "url": "{{base_url}}/api/calls"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('error is invalid_request', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error.code).to.eql('invalid_request');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
