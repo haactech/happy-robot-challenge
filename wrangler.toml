@@ -1,0 +1,8 @@
+name = "carrier-sales-api"
+main = "src/index.ts"
+compatibility_date = "2026-06-18"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "carrier-sales-api"
+database_id = "replace-with-cloudflare-d1-database-id"
